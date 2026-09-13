@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CloseLoop Demo</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <aside class="rail">
+      <div class="brand-mark">CL</div>
+      <div class="rail-copy">CloseLoop</div>
+      <div class="rail-spacer"></div>
+      <div class="fixture-badge">Fixture mode</div>
+    </aside>
+
+    <section class="workspace">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Approval-gated revenue operations</p>
+          <h1 id="page-title">New enquiries</h1>
+        </div>
+        <div class="topbar-meta">
+          <span id="status-pill" class="pill neutral">1 enquiry ready</span>
+          <span class="timestamp">Synthetic demo data</span>
+        </div>
+      </header>
+
+      <section id="queue-view" class="view active">
+        <article class="enquiry-card">
+          <div class="card-head">
+            <div>
+              <p class="label">Gmail fixture</p>
+              <h2>Maya Chen</h2>
+              <p class="muted">maya.chen@example.com</p>
+            </div>
+            <span class="pill success-soft">No matching lead found</span>
+          </div>
+          <h3>Kitchen renovation, hoping to start in six weeks</h3>
+          <p class="body-copy">Kitchen cabinets and counters, flooring, and paint. Budget USD 60,000 to USD 80,000. Quote requested by Thursday.</p>
+          <div class="chips">
+            <span>Renovation</span>
+            <span>High intent</span>
+            <span>Quote due Thu</span>
+          </div>
+          <div class="source-row">
+            <code>source_message_id: gmail-msg-8841</code>
+            <code>lead_key: CL-014</code>
+          </div>
+          <button id="prepare-btn" class="primary">Prepare action plan</button>
+        </article>
+      </section>
+
+      <section id="review-view" class="view">
+        <div class="review-grid">
+          <article class="panel">
+            <p class="label">Validated lead</p>
+            <h2>Maya Chen renovation enquiry</h2>
+            <dl class="summary-grid">
+              <div><dt>Service</dt><dd>Kitchen renovation</dd></div>
+              <div><dt>Location</dt><dd>Jomtien, Pattaya</dd></div>
+              <div><dt>Budget</dt><dd>USD 60,000 to USD 80,000</dd></div>
+              <div><dt>Timing</dt><dd>Start in about six weeks</dd></div>
+              <div><dt>Quote deadline</dt><dd>Thursday</dd></div>
+              <div><dt>Confidence</dt><dd>High for stated fields</dd></div>
+            </dl>
+          </article>
+
+          <article class="panel">
+            <p class="label">Planned actions</p>
+            <ol class="plan-list">
+              <li>Add lead CL-014 to Google Sheets</li>
+              <li>Create GitHub issue for the renovation estimate</li>
+              <li>Add a proposed Calendar follow-up for Thursday at 10:00</li>
+              <li>Create the displayed Gmail reply draft</li>
+            </ol>
+          </article>
+        </div>
+
+        <article class="panel reply-panel">
+          <p class="label">Reply draft preview</p>
+          <pre id="reply-preview">Hello Maya,
+
+Thank you for the kitchen renovation enquiry. I have recorded the cabinet and counter replacement, new flooring, and painting scope, with a target start in about six weeks and a quote requested by Thursday.
+
+To prepare the next step, could you share the exact property address, approximate floor area, any current photos or plans, and a suitable time for a site visit?
+
+Best,
+CloseLoop Demo Team</pre>
+        </article>
+
+        <div class="safety-strip">
+          <span>Validated</span>
+          <span>No duplicate</span>
+          <span>Retry limit 2</span>
+          <span>Outbound message requires approval</span>
+        </div>
+
+        <div class="actions">
+          <button id="reject-btn" class="secondary">Reject plan</button>
+          <button id="approve-btn" class="primary">Approve and execute</button>
+        </div>
+      </section>
+
+      <section id="execution-view" class="view">
+        <article class="panel execution-panel">
+          <div class="card-head">
+            <div>
+              <p class="label">Run timeline</p>
+              <h2 id="run-headline">Executing approved plan</h2>
+            </div>
+            <span id="run-state" class="pill warning">Running</span>
+          </div>
+
+          <div id="timeline" class="timeline"></div>
+
+          <div id="success-metrics" class="metrics hidden">
+            <div><strong id="metric-writes">4</strong><span>fixture writes</span></div>
+            <div><strong>1</strong><span>approval</span></div>
+            <div><strong id="metric-duplicates">0</strong><span>duplicate writes</span></div>
+          </div>
+
+          <div class="actions">
+            <button id="replay-btn" class="secondary hidden">Replay same enquiry</button>
+            <button id="reset-btn" class="ghost">Reset fixture</button>
+          </div>
+        </article>
+      </section>
+    </section>
+
+    <aside class="evidence">
+      <p class="label">Evidence</p>
+      <h2>Run receipt</h2>
+      <dl>
+        <div><dt>Run ID</dt><dd id="run-id">Not started</dd></div>
+        <div><dt>Idempotency key</dt><dd>gmail-msg-8841</dd></div>
+        <div><dt>Validation</dt><dd id="validation-value">Ready</dd></div>
+        <div><dt>Retry count</dt><dd id="retry-value">0</dd></div>
+        <div><dt>Final outcome</dt><dd id="outcome-value">Pending approval</dd></div>
+      </dl>
+      <div class="divider"></div>
+      <p class="label">Audit log</p>
+      <div id="audit-log" class="audit-log">
+        <p class="muted">No external write is claimed in fixture mode.</p>
+      </div>
+    </aside>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>
+
