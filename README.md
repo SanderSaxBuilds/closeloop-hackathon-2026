@@ -4,6 +4,14 @@ CloseLoop is an approval-gated revenue operations agent demo for the Multi-App A
 
 The current build is fixture-backed. It demonstrates the complete control flow using synthetic data while live authenticated connectors remain pending verification. It does not claim that Gmail, Google Sheets, GitHub, or Google Calendar writes have occurred.
 
+## Live links
+
+- Hosted interactive build: https://sandersaxbuilds.github.io/closeloop-hackathon-2026/
+- Two-minute timed demo: https://sandersaxbuilds.github.io/closeloop-hackathon-2026/demo.html
+- Public repository: https://github.com/SanderSaxBuilds/closeloop-hackathon-2026
+
+The two-minute demo is a captioned timed browser walkthrough of the verified synthetic fixture path. It is not a recording of live provider writes.
+
 ## Demo path
 
 1. Open `index.html`.
@@ -31,6 +39,7 @@ The UI uses deterministic fixture adapters. Live connector verification is still
 ## Files
 
 - `index.html` is the self-contained demo shell.
+- `demo.html` is a two-minute timed, captioned walkthrough of the fixture path.
 - `styles.css` contains the visual system.
 - `app.js` contains the approval gate, retry logic, audit log, and duplicate replay logic.
 - `reliability.md` records the reliability claims that the current fixture build can support.

@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CloseLoop two-minute demo</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f5f2e9;
+      color: #17241e;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #f5f2e9; }
+    button, a { font: inherit; }
+    .shell { display: grid; grid-template-columns: 160px minmax(0, 1fr); min-height: 100vh; }
+    .rail { background: #153e31; color: white; padding: 30px 22px; display: flex; flex-direction: column; gap: 18px; }
+    .mark { width: 50px; height: 50px; border-radius: 14px; background: #f5f2e9; color: #153e31; display: grid; place-items: center; font-weight: 800; }
+    .rail h1 { font-size: 21px; margin: 0; }
+    .rail p { font-size: 13px; line-height: 1.5; opacity: .82; margin: 0; }
+    .mode { margin-top: auto; border: 1px solid rgba(255,255,255,.28); border-radius: 999px; padding: 9px 12px; font-size: 12px; text-align: center; }
+    main { padding: 34px clamp(24px, 4vw, 64px); display: grid; grid-template-rows: auto auto 1fr auto; gap: 22px; }
+    .top { display: flex; justify-content: space-between; gap: 24px; align-items: start; }
+    .eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: 12px; font-weight: 800; color: #5d695f; }
+    h2 { font-size: clamp(30px, 5vw, 58px); line-height: .98; margin: 8px 0 0; max-width: 860px; }
+    .timer { text-align: right; min-width: 150px; }
+    .timer strong { display: block; font-size: 28px; }
+    .timer span { font-size: 12px; color: #657067; }
+    .progress { height: 8px; border-radius: 999px; background: #d9d7cd; overflow: hidden; }
+    .progress > div { height: 100%; width: 0; background: #153e31; transition: width .4s linear; }
+    .stage { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(280px, .75fr); gap: 22px; align-items: stretch; }
+    .card, .evidence { background: white; border: 1px solid #d9d7cd; border-radius: 24px; padding: clamp(22px, 3vw, 38px); box-shadow: 0 14px 40px rgba(35, 43, 37, .06); }
+    .card h3 { font-size: clamp(24px, 3.5vw, 42px); margin: 0 0 12px; }
+    .card p { font-size: 17px; line-height: 1.6; margin: 0; max-width: 800px; }
+    .facts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+    .fact { background: #f3f0e7; border-radius: 14px; padding: 14px; }
+    .fact span { display: block; color: #687168; font-size: 12px; margin-bottom: 4px; }
+    .fact strong { font-size: 15px; }
+    .evidence h4 { margin: 0 0 16px; font-size: 18px; }
+    .timeline { display: grid; gap: 10px; }
+    .row { display: grid; grid-template-columns: 16px 1fr auto; gap: 10px; align-items: center; padding: 12px 0; border-bottom: 1px solid #ece9df; }
+    .dot { width: 11px; height: 11px; border-radius: 50%; background: #c8c7c0; }
+    .row.success .dot { background: #2d8659; }
+    .row.warning .dot { background: #d39322; }
+    .row.skipped .dot { background: #667a98; }
+    .row small { color: #6d756e; }
+    .caption { background: #fff1c9; border: 1px solid #eed78f; border-radius: 18px; padding: 16px 20px; font-size: 16px; line-height: 1.5; }
+    .controls { display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
+    .controls button, .controls a { border-radius: 999px; padding: 10px 16px; text-decoration: none; border: 1px solid #153e31; color: #153e31; background: transparent; cursor: pointer; }
+    .controls button.primary { background: #153e31; color: white; }
+    @media (max-width: 820px) {
+      .shell { grid-template-columns: 1fr; }
+      .rail { display: none; }
+      main { padding: 22px; }
+      .top { align-items: end; }
+      .stage { grid-template-columns: 1fr; }
+      .facts { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="rail">
+      <div class="mark">CL</div>
+      <h1>CloseLoop</h1>
+      <p>Approval-gated revenue operations for small service businesses.</p>
+      <div class="mode">Synthetic fixture demo</div>
+    </aside>
+    <main>
+      <section class="top">
+        <div>
+          <div class="eyebrow">Two-minute timed walkthrough</div>
+          <h2 id="scene-title">One enquiry, one controlled workflow</h2>
+        </div>
+        <div class="timer">
+          <strong id="clock">2:00</strong>
+          <span>Auto plays with captions</span>
+        </div>
+      </section>
+      <div class="progress"><div id="progress-bar"></div></div>
+      <section class="stage">
+        <article class="card">
+          <h3 id="headline">The problem</h3>
+          <p id="body-copy">A service enquiry creates several manual follow-up tasks. CloseLoop prepares a single reviewed plan before any write happens.</p>
+          <div class="facts" id="facts"></div>
+        </article>
+        <aside class="evidence">
+          <h4>Execution evidence</h4>
+          <div class="timeline" id="timeline"></div>
+        </aside>
+      </section>
+      <section>
+        <div class="caption" id="caption">This timed browser demo uses synthetic fixture data. It does not claim live provider writes.</div>
+        <div class="controls" style="margin-top: 12px">
+          <a href="index.html">Open interactive demo</a>
+          <button id="restart">Restart</button>
+          <button class="primary" id="skip">Next scene</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script>
+    const rows = [
+      ['Gmail intake', 'Read the synthetic enquiry'],
+      ['Google Sheets', 'Prepare one lead record'],
+      ['GitHub issue', 'Prepare one delivery task'],
+      ['Google Calendar', 'Prepare one proposed follow-up'],
+      ['Gmail draft', 'Prepare a factual reply draft']
+    ];
+
+    const scenes = [
+      {
+        at: 0,
+        title: 'One enquiry, one controlled workflow',
+        headline: 'The problem',
+        body: 'A service enquiry creates several manual follow-up tasks. CloseLoop prepares a single reviewed plan before any write happens.',
+        caption: 'CloseLoop is an approval-gated revenue operations demo. This walkthrough uses synthetic fixture data only.',
+        facts: [['Source', 'Synthetic Gmail fixture'], ['Lead key', 'CL-014'], ['Approval', 'Required'], ['Duplicate writes', '0']],
+        states: []
+      },
+      {
+        at: 12,
+        title: 'Extract and validate the buyer facts',
+        headline: 'Maya Chen needs a kitchen renovation',
+        body: 'The fixture states the scope, Pattaya location, six-week timing, USD 60,000 to USD 80,000 budget and a Thursday quote deadline.',
+        caption: 'CloseLoop separates stated facts from missing information and gives the fixture a stable idempotency key.',
+        facts: [['Service', 'Kitchen renovation'], ['Location', 'Jomtien, Pattaya'], ['Timing', 'About six weeks'], ['Confidence', 'High for stated fields']],
+        states: [['Gmail intake', 'success']]
+      },
+      {
+        at: 32,
+        title: 'Review the exact plan before execution',
+        headline: 'Human approval is the control point',
+        body: 'The operator sees the proposed lead record, delivery issue, calendar follow-up and reply draft before the workflow can proceed.',
+        caption: 'No outbound email is sent automatically. Pricing, delivery dates and availability are never invented.',
+        facts: [['Validation', 'Passed'], ['Duplicate check', 'Passed'], ['Retry limit', '2'], ['Outbound send', 'Disabled']],
+        states: [['Gmail intake', 'success']]
+      },
+      {
+        at: 52,
+        title: 'Execute the approved fixture path',
+        headline: 'Each step leaves a receipt',
+        body: 'After one approval, the fixture creates deterministic demonstration receipts for the lead record, delivery issue, follow-up and Gmail draft.',
+        caption: 'These IDs are synthetic demo receipts. They are not presented as Google or GitHub provider records.',
+        facts: [['Run ID', 'RUN-0914-014'], ['Approval count', '1'], ['Fixture writes', '4'], ['Audit log', 'Append-only demo']],
+        states: [['Gmail intake', 'success'], ['Google Sheets', 'success'], ['GitHub issue', 'success']]
+      },
+      {
+        at: 76,
+        title: 'Recover without repeating successful steps',
+        headline: 'Calendar fails once, then only Calendar retries',
+        body: 'A labelled injected 503 happens before the Calendar fixture write. Existing successful receipts remain intact and the retry checks for an existing lead key first.',
+        caption: 'The recovery path demonstrates bounded retry behavior and preserves completed work instead of restarting the whole workflow.',
+        facts: [['Injected error', 'Calendar 503'], ['Retry count', '1'], ['Prior receipts', 'Retained'], ['Duplicate check', 'Before retry']],
+        states: [['Gmail intake', 'success'], ['Google Sheets', 'success'], ['GitHub issue', 'success'], ['Google Calendar', 'warning']]
+      },
+      {
+        at: 96,
+        title: 'Close the loop with a draft, not an automatic send',
+        headline: 'The approved reply remains a draft',
+        body: 'The final fixture step prepares a factual clarification request based only on the synthetic enquiry. The operator keeps control of any real outbound communication.',
+        caption: 'The loop closes with one approval, one bounded retry and a complete fixture audit trail.',
+        facts: [['Calendar', 'Recovered'], ['Gmail reply', 'Draft only'], ['Final outcome', 'Fixture complete'], ['Live writes claimed', 'None']],
+        states: [['Gmail intake', 'success'], ['Google Sheets', 'success'], ['GitHub issue', 'success'], ['Google Calendar', 'success'], ['Gmail draft', 'success']]
+      },
+      {
+        at: 108,
+        title: 'Replay proves idempotency',
+        headline: 'The same trigger produces zero new writes',
+        body: 'The replay finds the existing run through the same idempotency key and skips every write step.',
+        caption: 'CloseLoop ends on the reliability claim that is actually tested in this build: exact replay produces zero new fixture writes.',
+        facts: [['Idempotency key', 'gmail-msg-8841'], ['Replay writes', '0'], ['Duplicate writes', '0'], ['Status', 'Existing run reused']],
+        states: rows.map(([name]) => [name, 'skipped'])
+      }
+    ];
+
+    const total = 120;
+    let started = performance.now();
+    let manualOffset = 0;
+
+    const title = document.getElementById('scene-title');
+    const headline = document.getElementById('headline');
+    const body = document.getElementById('body-copy');
+    const caption = document.getElementById('caption');
+    const facts = document.getElementById('facts');
+    const timeline = document.getElementById('timeline');
+    const clock = document.getElementById('clock');
+    const progress = document.getElementById('progress-bar');
+
+    function currentSeconds() {
+      return Math.min(total, Math.max(0, (performance.now() - started) / 1000 + manualOffset));
+    }
+
+    function activeScene(sec) {
+      let result = scenes[0];
+      for (const scene of scenes) if (sec >= scene.at) result = scene;
+      return result;
+    }
+
+    function renderScene(scene) {
+      title.textContent = scene.title;
+      headline.textContent = scene.headline;
+      body.textContent = scene.body;
+      caption.textContent = scene.caption;
+      facts.innerHTML = scene.facts.map(([label, value]) => `<div class="fact"><span>${label}</span><strong>${value}</strong></div>`).join('');
+      const states = Object.fromEntries(scene.states);
+      timeline.innerHTML = rows.map(([name, detail]) => {
+        const state = states[name] || '';
+        const label = state === 'success' ? 'Verified fixture step' : state === 'warning' ? 'Retrying once' : state === 'skipped' ? 'Existing run reused' : 'Pending';
+        return `<div class="row ${state}"><span class="dot"></span><div><strong>${name}</strong><br><small>${detail}</small></div><small>${label}</small></div>`;
+      }).join('');
+    }
+
+    let lastScene = null;
+    function tick() {
+      const sec = currentSeconds();
+      const scene = activeScene(sec);
+      if (scene !== lastScene) {
+        renderScene(scene);
+        lastScene = scene;
+      }
+      const remain = Math.max(0, Math.ceil(total - sec));
+      const min = Math.floor(remain / 60);
+      const s = String(remain % 60).padStart(2, '0');
+      clock.textContent = `${min}:${s}`;
+      progress.style.width = `${Math.min(100, sec / total * 100)}%`;
+      if (sec < total) requestAnimationFrame(tick);
+    }
+
+    document.getElementById('restart').addEventListener('click', () => {
+      started = performance.now();
+      manualOffset = 0;
+      lastScene = null;
+      requestAnimationFrame(tick);
+    });
+
+    document.getElementById('skip').addEventListener('click', () => {
+      const sec = currentSeconds();
+      const next = scenes.find(scene => scene.at > sec + .5);
+      if (!next) return;
+      manualOffset += next.at - sec;
+      lastScene = null;
+    });
+
+    renderScene(scenes[0]);
+    requestAnimationFrame(tick);
+  </script>
+</body>
+</html>

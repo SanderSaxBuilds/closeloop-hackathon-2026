@@ -12,14 +12,17 @@
 - Responsive layout included.
 - Reliability note written.
 
+## Verified before submission
+
+- Local fixture runtime completed in a browser with one bounded Calendar retry and an exact replay showing zero new writes.
+- Public repository created and clean-cloned from `main` after upload.
+- GitHub Pages enabled and the hosted HTML, CSS, and JavaScript returned HTTP 200.
+- Organizer submission form located from the live calendar event. It closes at 4:00 PM Pacific.
+
 ## Remaining before submission
 
-- Open the demo in a browser and visually verify desktop and narrow layout.
-- Verify the organizer's current submission route and exact deadline.
 - Connect and test at least three real external apps, or state the exact live limitation.
 - Replace synthetic receipt identifiers only with verified provider IDs.
-- Create or verify a repository and run a secret review before making anything public.
-- Record a two-minute demo after the final live status is known.
+- Publish and verify `demo.html` as the captioned two-minute fixture walkthrough.
 - Verify any submitted link after submission.
 - Record the organizer confirmation as a receipt.
-
