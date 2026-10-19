@@ -5,19 +5,21 @@ const fixture = {
 }
 
 const rows = [
-  { key: 'gmail_read', title: 'Gmail intake', detail: 'Read synthetic fixture and validate stated fields', receipt: 'gmail-msg-8841' },
-  { key: 'sheets', title: 'Google Sheets lead', detail: 'Upsert one lead row and append audit record', receipt: 'fixture-sheet-row-CL-014' },
+  { key: 'gmail_read', title: 'Gmail intake', detail: 'Read the synthetic enquiry and validate the stated fields', receipt: 'gmail-msg-8841' },
+  { key: 'sheets', title: 'Google Sheets lead', detail: 'Upsert one lead row and append an audit record', receipt: 'fixture-sheet-row-CL-014' },
   { key: 'github', title: 'GitHub issue', detail: 'Create one estimate task with the same lead key', receipt: 'fixture-issue-42' },
   { key: 'calendar', title: 'Google Calendar follow-up', detail: 'Create one proposed Thursday follow-up', receipt: 'fixture-event-7K2' },
-  { key: 'gmail_draft', title: 'Gmail reply draft', detail: 'Create factual reply draft without sending', receipt: 'fixture-draft-9021' }
+  { key: 'gmail_draft', title: 'Gmail reply draft', detail: 'Create the factual reply as a draft, without sending', receipt: 'fixture-draft-9021' }
 ]
 
 const state = {
   approved: false,
+  running: false,
   finished: false,
   retryCount: 0,
   audit: [],
-  processed: false
+  processed: false,
+  runToken: 0
 }
 
 const views = {
@@ -36,6 +38,7 @@ const retryValue = document.getElementById('retry-value')
 const outcomeValue = document.getElementById('outcome-value')
 const validationValue = document.getElementById('validation-value')
 const runId = document.getElementById('run-id')
+const approveBtn = document.getElementById('approve-btn')
 const replayBtn = document.getElementById('replay-btn')
 const successMetrics = document.getElementById('success-metrics')
 const metricWrites = document.getElementById('metric-writes')
@@ -44,6 +47,8 @@ const metricDuplicates = document.getElementById('metric-duplicates')
 function showView(name) {
   Object.values(views).forEach(view => view.classList.remove('active'))
   views[name].classList.add('active')
+  title.setAttribute('tabindex', '-1')
+  title.focus({ preventScroll: false })
 }
 
 function nowLabel() {
@@ -57,31 +62,56 @@ function addAudit(step, result, detail) {
 }
 
 function renderAudit() {
-  auditLog.innerHTML = ''
+  auditLog.replaceChildren()
+  if (!state.audit.length) {
+    const empty = document.createElement('p')
+    empty.className = 'muted'
+    empty.textContent = 'No external write is claimed in fixture mode.'
+    auditLog.appendChild(empty)
+    return
+  }
   state.audit.forEach(entry => {
     const div = document.createElement('div')
     div.className = 'audit-entry'
-    div.textContent = `${entry.at} | ${entry.step} | ${entry.result} | ${entry.detail}`
+    const head = document.createElement('div')
+    head.className = 'audit-head'
+    const step = document.createElement('span')
+    step.className = 'audit-step'
+    step.textContent = `${entry.step}, ${entry.result.replace(/_/g, ' ')}`
+    const at = document.createElement('time')
+    at.textContent = entry.at
+    head.append(step, at)
+    const detail = document.createElement('p')
+    detail.textContent = entry.detail
+    div.append(head, detail)
     auditLog.appendChild(div)
   })
+  auditLog.scrollTop = auditLog.scrollHeight
 }
 
 function renderTimeline(statusMap = {}) {
-  timeline.innerHTML = ''
+  timeline.replaceChildren()
   rows.forEach(row => {
     const status = statusMap[row.key] || 'pending'
-    const div = document.createElement('div')
-    div.className = `timeline-row ${status}`
-    const statusCopy = status === 'success' ? 'Verified fixture receipt' : status === 'warning' ? 'Retrying once' : status === 'skipped' ? 'Existing run reused' : status === 'running' ? 'Running' : 'Pending'
-    div.innerHTML = `
-      <span class="status-dot"></span>
-      <div>
-        <div class="row-title">${row.title}</div>
-        <div class="row-detail">${row.detail} · ${statusCopy}</div>
-      </div>
-      <div class="row-receipt">${status === 'success' || status === 'skipped' ? row.receipt : ''}</div>
-    `
-    timeline.appendChild(div)
+    const li = document.createElement('li')
+    li.className = `timeline-row ${status}`
+    const statusCopy = status === 'success' ? 'Fixture receipt recorded' : status === 'warning' ? 'Failed once, retrying' : status === 'skipped' ? 'Existing run reused' : status === 'running' ? 'Running' : 'Pending'
+    const dot = document.createElement('span')
+    dot.className = 'status-dot'
+    dot.setAttribute('aria-hidden', 'true')
+    const body = document.createElement('div')
+    const rowTitle = document.createElement('div')
+    rowTitle.className = 'row-title'
+    rowTitle.textContent = row.title
+    const detail = document.createElement('div')
+    detail.className = 'row-detail'
+    detail.textContent = `${row.detail}. ${statusCopy}.`
+    body.append(rowTitle, detail)
+    const receipt = document.createElement('div')
+    receipt.className = 'row-receipt'
+    receipt.textContent = status === 'success' || status === 'skipped' ? row.receipt : ''
+    li.append(dot, body, receipt)
+    timeline.appendChild(li)
   })
 }
 
@@ -93,9 +123,9 @@ function setTopStatus(copy, className) {
 function preparePlan() {
   title.textContent = 'Review and approve'
   setTopStatus('Approval required', 'warning')
-  validationValue.textContent = 'Validated fixture fields'
+  validationValue.textContent = 'Fixture fields validated'
   outcomeValue.textContent = 'Awaiting one approval'
-  addAudit('validate', 'pass', 'Fixture fields validated and duplicate key not found')
+  addAudit('validate', 'pass', 'Fixture fields validated and no existing lead key found')
   showView('review')
 }
 
@@ -112,9 +142,14 @@ function wait(ms) {
 }
 
 async function executeApprovedPlan() {
+  if (state.running) return
+  const token = ++state.runToken
+  const cancelled = () => token !== state.runToken
   state.approved = true
+  state.running = true
   state.finished = false
   state.retryCount = 0
+  approveBtn.disabled = true
   title.textContent = 'Execution and evidence'
   setTopStatus('Executing approved plan', 'warning')
   runId.textContent = fixture.runId
@@ -128,18 +163,21 @@ async function executeApprovedPlan() {
     renderTimeline(status)
     addAudit(row.key, 'start', `Begin ${row.title}`)
     await wait(700)
+    if (cancelled()) return
 
     if (row.key === 'calendar' && state.retryCount === 0) {
       status[row.key] = 'warning'
       state.retryCount = 1
       retryValue.textContent = '1'
       renderTimeline(status)
-      addAudit('calendar', 'injected_error', '503 fixture failure before write. Completed receipts retained.')
+      addAudit('calendar', 'injected_error', '503 fixture failure before the write. Completed receipts kept.')
       await wait(900)
+      if (cancelled()) return
       addAudit('calendar', 'duplicate_check', 'Lead key search found no existing Calendar fixture receipt')
       status[row.key] = 'running'
       renderTimeline(status)
       await wait(650)
+      if (cancelled()) return
     }
 
     status[row.key] = 'success'
@@ -147,6 +185,7 @@ async function executeApprovedPlan() {
     addAudit(row.key, 'success', `${row.receipt} recorded as a synthetic fixture receipt`)
   }
 
+  state.running = false
   state.processed = true
   state.finished = true
   runHeadline.textContent = 'Loop closed'
@@ -164,29 +203,32 @@ async function executeApprovedPlan() {
 function replaySameEnquiry() {
   if (!state.processed) return
   const status = {}
-  rows.forEach(row => status[row.key] = 'skipped')
+  rows.forEach(row => { status[row.key] = 'skipped' })
   renderTimeline(status)
-  runHeadline.textContent = 'Already processed as RUN-0914-014'
+  runHeadline.textContent = `Already processed as ${fixture.runId}`
   runState.textContent = 'Duplicate blocked'
   runState.className = 'pill duplicate'
   setTopStatus('0 writes performed', 'duplicate')
   outcomeValue.textContent = 'Existing run reused. Zero new writes.'
   metricWrites.textContent = '0'
   metricDuplicates.textContent = '0'
-  addAudit('deduplicate', 'pass', 'Idempotency key gmail-msg-8841 reused the original run with zero new writes')
+  addAudit('deduplicate', 'pass', `Idempotency key ${fixture.idempotencyKey} reused the original run with zero new writes`)
 }
 
 function resetFixture() {
+  state.runToken++
   state.approved = false
+  state.running = false
   state.finished = false
   state.retryCount = 0
   state.audit = []
   state.processed = false
+  approveBtn.disabled = false
   runId.textContent = 'Not started'
   validationValue.textContent = 'Ready'
   retryValue.textContent = '0'
   outcomeValue.textContent = 'Pending approval'
-  auditLog.innerHTML = '<p class="muted">No external write is claimed in fixture mode.</p>'
+  renderAudit()
   successMetrics.classList.add('hidden')
   replayBtn.classList.add('hidden')
   runHeadline.textContent = 'Executing approved plan'
@@ -200,9 +242,8 @@ function resetFixture() {
 
 document.getElementById('prepare-btn').addEventListener('click', preparePlan)
 document.getElementById('reject-btn').addEventListener('click', rejectPlan)
-document.getElementById('approve-btn').addEventListener('click', executeApprovedPlan)
-document.getElementById('replay-btn').addEventListener('click', replaySameEnquiry)
+approveBtn.addEventListener('click', executeApprovedPlan)
+replayBtn.addEventListener('click', replaySameEnquiry)
 document.getElementById('reset-btn').addEventListener('click', resetFixture)
 
 renderTimeline()
-
