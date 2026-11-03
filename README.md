@@ -45,3 +45,11 @@ The interface runs on deterministic fixture adapters. Each app needs live verifi
 - `app.js` holds the approval gate, retry, audit log, duplicate replay and reset logic.
 - `reliability.md` lists what the fixture build supports and what is still unverified.
 - `submission-checklist.md` separates completed local work from remaining live verification.
+
+## Contact
+
+More work by Alexandr Khrustalev in the [portfolio](https://sandersaxbuilds.github.io/selected-work/). Contact on Telegram [@sandersax](https://t.me/sandersax).
+
+## License
+
+MIT. See LICENSE.
